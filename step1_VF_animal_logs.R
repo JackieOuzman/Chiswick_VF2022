@@ -28,6 +28,46 @@ animal_GPS_data <- animal_GPS_data %>%
 animal_GPS_data <- animal_GPS_data %>% 
   dplyr::mutate( ID_jaxs = row_number())
 
+#############################################################################################
+####    Assign collar to sheep names #####
+unique(animal_GPS_data$deviceName)
+#Sue suggests that these were the ones used via email Thu 3/11/2022 10:35 AM
+# 9380422
+# 9380674
+# 9380743
+# 9380451
+# 9380265
+
+animal_GPS_data <- animal_GPS_data %>% 
+  mutate(Sheep_ID = case_when(
+    #deviceName == 9380142 ~ "xx",
+    # deviceName == 9380268  ~ "2", 
+    #after 18/10 I assume at 10:30
+    # deviceName == 9380470  ~ "4",
+    # deviceName == 9380479  ~ "5",
+    # deviceName == 9380787 ~ "8",
+    
+    deviceName == 9380422  ~ "1",
+    deviceName == 9380674  ~ "2",
+    deviceName == 9380743  ~ "3",
+    deviceName == 9380451  ~ "4",
+    deviceName == 9380265  ~ "5",
+    
+    TRUE                      ~ "other"
+    
+  ))
+
+#only keep the collar that sue said:)
+animal_GPS_data <- animal_GPS_data %>%
+  filter(Sheep_ID != "other")
+
+
+## I am having a spot of trouble with collar 9380422
+
+ collar_9380422 <- animal_GPS_data %>% 
+   filter(deviceName== "9380422")
+ max(collar_9380422$local_time)
+ min(collar_9380422$local_time)
 
 # ### what are the fences callled in this dataset?
 # unique(animal_GPS_data$fencesID) # we only have 3: "1dd82" "1f1eb" "1766d"and NULL
@@ -52,14 +92,18 @@ animal_GPS_data <- animal_GPS_data %>%
 # min(fence_1766d$local_time)
 #rm(fence_1766d, fence_1dd82, fence_1f1eb)
 
-#looks like I will use 1dd82 so only keep these records
+#looks like I will use 1dd82 so only keep these records - not super confident with this 
+ #if I keep only these records I loose a sheep collar 9380422
+ # I think more than one fence was used, but perhaps it wasnt recorded.
 
-animal_GPS_data <- animal_GPS_data %>% 
-     filter(fencesID== "1dd82")
-   
+# animal_GPS_data <- animal_GPS_data %>% 
+#      filter(fencesID== "1dd82")
+#    
 
-
-
+## ok lets just remove the Nulls
+  animal_GPS_data <- animal_GPS_data %>% 
+       filter(fencesID!= "NULL")
+     
 
 
 
@@ -74,38 +118,6 @@ animal_GPS_data <- animal_GPS_data %>%
          DOY = yday(date))
 
 
-#############################################################################################
-####    Assign collar to sheep names #####
-unique(animal_GPS_data$deviceName)
-#Sue suggests that these were the ones used via email Thu 3/11/2022 10:35 AM
-# 9380422
-# 9380674
-# 9380743
-# 9380451
-# 9380265
-
-animal_GPS_data <- animal_GPS_data %>% 
-  mutate(Sheep_ID = case_when(
-    #deviceName == 9380142 ~ "xx",
-    # deviceName == 9380268  ~ "2", 
-      #after 18/10 I assume at 10:30
-    # deviceName == 9380470  ~ "4",
-    # deviceName == 9380479  ~ "5",
-    # deviceName == 9380787 ~ "8",
-    
-    deviceName == 9380422  ~ "1",
-    deviceName == 9380674  ~ "2",
-    deviceName == 9380743  ~ "3",
-    deviceName == 9380451  ~ "4",
-    deviceName == 9380265  ~ "5",
-  
-    TRUE                      ~ "other"
-    
-  ))
-
-#only keep the collar that sue said:)
-animal_GPS_data <- animal_GPS_data %>%
-  filter(Sheep_ID != "other")
 
 ############################################################################################
 ############                  Turn into spatial data          ##############################
@@ -203,7 +215,7 @@ facet_wrap(. ~ date)+
 ################################################################################
 #### filtering out data based on times trail 28/6- 9:50 and end 2/7- at 10:10 – this is based on the times Dana gave me
 
-# start of trial and training period (according to sue) - keep everything after  17th 11:35 or 11:40 s above
+# start of trial (according to sue) - keep everything after  17th 11:35 or 11:40 s above
 
 animal_GPS_data_sf_trans <- animal_GPS_data_sf_trans %>% 
   filter(
@@ -217,7 +229,7 @@ animal_GPS_data_sf_trans <- animal_GPS_data_sf_trans %>%
 
 
 
-###------------------------------ UP TO HERE ----------------------------------------#######
+
 
 
 # Times sheep were brought in each day for the VF Chiswick trial;
@@ -277,7 +289,6 @@ rm(day_28, day_29_clean, day_30_clean, day_1_clean, day_2)
 
 ### remove the water and other animals logs
 
-unique(animals_GPS_trim_time_non_train$Sheep_ID)
 
 animals_GPS_trim_time <- animals_GPS_trim_time %>% 
   filter(Sheep_ID !=  "other") %>% 
@@ -294,7 +305,7 @@ ggplot() +
   theme_bw()+
   theme(legend.position = "none",
         axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "All animal logs between 28/6 at 09:50 and 27/7 at 10:10",
+  labs(title = "All animal logs between 28/06 at 09:50 and 02/07 at 10:10",
   subtitle = "log when animals were yarded removed")
 
 
