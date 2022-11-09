@@ -10,7 +10,7 @@ library(sf)
 
 ## this code takes the cleaned data and splits it into animals and converts the cumm value into counts
 
-path_output_files <- "W:/VF/Sheep_Lameroo_2022/animal_logs/jax_working/"
+path_output_files <- "W:/VF/Sheep_Chiswick_2022/animal_logs/jax_working/"
 VF_animals_logs <- read_csv(paste0(path_output_files,"animals_GPS_trim_time_step1.csv"))
 names(VF_animals_logs)
 
@@ -52,19 +52,17 @@ list_animals <- VF_animals_logs %>%
 list_animals <-ungroup(list_animals)
 
 
+
+
+
+
 list_animals$deviceName[1:34]
 list_animals <- c(
- 490705,
-1390182,
-1390456,
-1390577,
-1390581,
-1390737,
-1390743,
-1390749,
-1390736,
-1390826,
-1391505
+  # 9380422, #the problem collar Sue is getting back to me if we need to use another collar
+  9380265,
+  9380451,
+  9380674,
+  9380743
   )
 
 
@@ -100,29 +98,18 @@ for (list_animals in list_animals){
 
 
 Fence_all <- rbind(
-  temp_490705,
-  temp_1390182,
-  temp_1390456,
-  temp_1390577,
-  temp_1390581,
-  temp_1390737,
-  temp_1390743,
-  temp_1390749,
-  temp_1390736,
-  temp_1390826,
-  temp_1391505
+  # temp_9380422, #the problem collar Sue is getting back to me if we need to use another collar
+  temp_9380265,
+  temp_9380451,
+  temp_9380674,
+  temp_9380743
+
 )
-rm( temp_490705,
-    temp_1390182,
-    temp_1390456,
-    temp_1390577,
-    temp_1390581,
-    temp_1390737,
-    temp_1390743,
-    temp_1390749,
-    temp_1390736,
-    temp_1390826,
-    temp_1391505
+rm( # temp_9380422, #the problem collar Sue is getting back to me if we need to use another collar
+  temp_9380265,
+  temp_9380451,
+  temp_9380674,
+  temp_9380743
   )
 
 

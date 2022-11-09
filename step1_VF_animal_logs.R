@@ -11,7 +11,7 @@ library(sf)
 
 ### bring in animal logs for VF all
 
-animal_GPS_data <- read_csv("W:/VF/Sheep_Chiswick_2022/raw_data/trial_csiro_armidale_chiswick_mob_259_mob1_filtered.csv")
+animal_GPS_data <- read_csv("W:/VF/Sheep_Chiswick_2022/raw_data/db_trial_csiro_armidale_chiswick_mob_259_filtered.csv")
 #format time and date clm from character to time
 animal_GPS_data <-
   animal_GPS_data %>%
@@ -104,12 +104,12 @@ animal_GPS_data <- animal_GPS_data %>%
   animal_GPS_data <- animal_GPS_data %>% 
        filter(fencesID!= "NULL")
      
-
+str(animal_GPS_data)
 
 
 ## reorder the clms
 animal_GPS_data <- animal_GPS_data %>% 
-  dplyr::select(ID_jaxs,deviceUIDHex:local_time)
+  dplyr::select(ID_jaxs,Sheep_ID, deviceUIDHex:local_time)
 
 
 
@@ -202,7 +202,7 @@ facet_wrap(. ~ date)+
 
 
 
-
+str(animal_GPS_data_sf_trans)
 
 
 
