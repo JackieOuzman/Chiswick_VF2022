@@ -29,8 +29,38 @@ animal_GPS_data <- animal_GPS_data %>%
   dplyr::mutate( ID_jaxs = row_number())
 
 
-### what are the fences callled in this dataset?
-unique(animal_GPS_data$fencesID) # we only have 3: "1dd82" "1f1eb" "1766d"and NULL
+# ### what are the fences callled in this dataset?
+# unique(animal_GPS_data$fencesID) # we only have 3: "1dd82" "1f1eb" "1766d"and NULL
+# 
+# ### when were these 3 fences active?
+# fence_1dd82 <- animal_GPS_data %>% 
+#   filter(fencesID== "1dd82")
+# 
+# max(fence_1dd82$local_time)
+# min(fence_1dd82$local_time)
+# 
+# fence_1f1eb <- animal_GPS_data %>% 
+#   filter(fencesID== "1f1eb")
+# 
+# max(fence_1f1eb$local_time)
+# min(fence_1f1eb$local_time)
+# 
+# fence_1766d <- animal_GPS_data %>% 
+#   filter(fencesID== "1766d")
+# 
+# max(fence_1766d$local_time)
+# min(fence_1766d$local_time)
+#rm(fence_1766d, fence_1dd82, fence_1f1eb)
+
+#looks like I will use 1dd82 so only keep these records
+
+animal_GPS_data <- animal_GPS_data %>% 
+     filter(fencesID== "1dd82")
+   
+
+
+
+
 
 
 ## reorder the clms
@@ -110,42 +140,34 @@ rm(animal_GPS_data,animal_GPS_data_sf )
 
 
 
-Chiswick_hard_fence_bound <- st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/Chiswick_paddock_boundary.shp")  # this is the hard fences
+Chiswick_hard_fence_bound <- st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/Chiswick_paddock_boundary_final.shp")  # this is the hard fences
 
 Chiswick_hard_fence_bound <-
   st_transform(Chiswick_hard_fence_bound, crs = 28355)
 
-###------------------------------ UP TO HERE ----------------------------------------#######
 
-Lameroo_Vf_area_hard_fence_bound_buff <- st_read("W:/VF/Sheep_Lameroo_2022/spatial_boundary/HF_Lameroo_rough_10_proj.shp")  # this is the 
+Chiswick_hard_fence_bound_buff <- st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/Chiswick_paddock_boundary_final_buff10.shp")  # this is the 
 
-Lameroo_Vf_area <-                  st_read("W:/VF/Sheep_Lameroo_2022/spatial_boundary/VF_proj.shp")
-Lameroo_Vf_area_buffer_10 <-                  st_read("W:/VF/Sheep_Lameroo_2022/spatial_boundary/VF_Buffer10_proj.shp")
-water_pt <-  st_read("W:/VF/Sheep_Lameroo_2022/spatial_boundary/water_pts.shp")
+Chiswick_hard_fence_bound_buff <-
+  st_transform(Chiswick_hard_fence_bound_buff, crs = 28355)
 
 
+VF_paddock <-   st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/VF_paddock.shp")
+
+VF_paddock <-  st_transform(VF_paddock, crs = 28355)
+
+#water_pt <-  st_read("W:/VF/Sheep_Lameroo_2022/spatial_boundary/water_pts.shp")
 
 
 
-
-
-Lameroo_Vf_area_buffer_10 <-
-  st_transform(Lameroo_Vf_area_buffer_10, crs = 28355)
-Lameroo_Vf_area <-
-  st_transform(Lameroo_Vf_area, crs = 28355)
-water_pt <-
-  st_transform(water_pt, crs = 28355)
-
-Lameroo_Vf_area_hard_fence_bound_buff<-
-  st_transform(Lameroo_Vf_area_hard_fence_bound_buff, crs = 28355)
 
 
 ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area_buffer_10, color = "black", fill = NA) +
+  geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
+  geom_sf(data = VF_paddock, color = "black", fill = NA) +
+  geom_sf(data = Chiswick_hard_fence_bound_buff, color = "black", fill = NA) +
   #geom_sf(data = water_pts_sf ,color ="Blue") +
-  geom_sf(data = animal_GPS_data_sf_trans ,alpha = 0.01) +
+  geom_sf(data = animal_GPS_data_sf_trans ,alpha = 0.03) +
   theme_bw()+
   theme(legend.position = "none",
         axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
@@ -154,11 +176,11 @@ ggplot() +
 
 
 ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area_buffer_10, color = "black", fill = NA) +
+  geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
+  geom_sf(data = VF_paddock, color = "black", fill = NA) +
+  geom_sf(data = Chiswick_hard_fence_bound_buff, color = "black", fill = NA) +
   #geom_sf(data = water_pts_sf ,color ="Blue") +
-  geom_sf(data = animal_GPS_data_sf_trans ,alpha = 0.01) +
+  geom_sf(data = animal_GPS_data_sf_trans ,alpha = 0.05) +
   theme_bw()+
   theme(legend.position = "none",
         axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
@@ -174,213 +196,78 @@ facet_wrap(. ~ date)+
 
 
 # --------------------------------------------------------------------------------------------------------------------- #
-###### Need to work out what the start time 
-#Rick said there was a time the animals moved back in the VF area after they were in the south of the paddock and this is the satrt time
-
-GPS_data_sf_trans_17 <- animal_GPS_data_sf_trans %>% filter(date=="2022-10-17")
-
-GPS_data_sf_trans_17 <- GPS_data_sf_trans_17 %>% 
-  mutate(hour = hour(local_time),
-         minute = minute(local_time))
-
-ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area_buffer_10, color = "black", fill = NA) +
-  #geom_sf(data = water_pts_sf ,color ="Blue") +
-  geom_sf(data = GPS_data_sf_trans_17 ,alpha = 1) +
-  theme_bw()+
-  theme(legend.position = "none",
-        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  facet_wrap(.~ hour)+
-  labs(title = "Day 1, hours as facet")
-
-#so 11am to 14 looks like the window make 3 df for each of these hrs
-
-GPS_data_sf_trans_17_Hr_11 <- GPS_data_sf_trans_17 %>% 
-  filter(local_time >= ymd_hms("2022-10-17 11:00:00", tz= "Australia/Adelaide"), #yyy-mm-dd hh:mm:ss
-         local_time <=  ymd_hms("2022-10-17 12:00:00", tz= "Australia/Adelaide"))
-
-GPS_data_sf_trans_17_Hr_12 <- GPS_data_sf_trans_17 %>% 
-  filter(local_time >= ymd_hms("2022-10-17 12:00:00", tz= "Australia/Adelaide"), #yyy-mm-dd hh:mm:ss
-         local_time <=  ymd_hms("2022-10-17 13:00:00", tz= "Australia/Adelaide")) 
-
-GPS_data_sf_trans_17_Hr_13 <- GPS_data_sf_trans_17 %>% 
-  filter(local_time >= ymd_hms("2022-10-17 13:00:00", tz= "Australia/Adelaide"), #yyy-mm-dd hh:mm:ss
-         local_time <=  ymd_hms("2022-10-17 14:00:00", tz= "Australia/Adelaide"))  
-
-ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area_buffer_10, color = "black", fill = NA) +
-  #geom_sf(data = water_pts_sf ,color ="Blue") +
-  geom_sf(data = GPS_data_sf_trans_17_Hr_11 ,alpha = 1) +
-  theme_bw()+
-  theme(legend.position = "none",
-        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "Day 1 at 11am minute as facet")+
-  facet_wrap(.~ minute)
-  
-ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area_buffer_10, color = "black", fill = NA) +
-  #geom_sf(data = water_pts_sf ,color ="Blue") +
-  geom_sf(data = GPS_data_sf_trans_17_Hr_12 ,alpha = 1) +
-  theme_bw()+
-  theme(legend.position = "none",
-        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "Day 1 at 12am minute as facet")+
-  facet_wrap(.~ minute)
-
-ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area_buffer_10, color = "black", fill = NA) +
-  #geom_sf(data = water_pts_sf ,color ="Blue") +
-  geom_sf(data = GPS_data_sf_trans_17_Hr_12 ,alpha = 1) +
-  theme_bw()+
-  theme(legend.position = "none",
-        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "Day 1 at 12am minute as facet")+
-  facet_wrap(.~ minute)
-
-
-ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area_buffer_10, color = "black", fill = NA) +
-  #geom_sf(data = water_pts_sf ,color ="Blue") +
-  geom_sf(data = GPS_data_sf_trans_17_Hr_13 ,alpha = 1) +
-  theme_bw()+
-  theme(legend.position = "none",
-        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "Day 1 at 1pm minute as facet")+
-  facet_wrap(.~ minute)
-
-### so it look like the VF started at 13:10 prior to this the animals were training
-## the data will need a new clm for training and VF trial
-
-rm( GPS_data_sf_trans_17_Hr_12, GPS_data_sf_trans_17_Hr_13)
-
-
-
-
-### ok I also need to know when the training period started
-
-ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area_buffer_10, color = "black", fill = NA) +
-  #geom_sf(data = water_pts_sf ,color ="Blue") +
-  geom_sf(data = GPS_data_sf_trans_17 ,alpha = 1) +
-  theme_bw()+
-  theme(legend.position = "none",
-        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  facet_wrap(.~ hour)+
-  labs(title = "Day 1, hours as facet")
-
-## looks like they entered the paddock at 11am - but what was the exact time? look like it was 11:40
-ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area_buffer_10, color = "black", fill = NA) +
-  #geom_sf(data = water_pts_sf ,color ="Blue") +
-  geom_sf(data = GPS_data_sf_trans_17_Hr_11 ,alpha = 1) +
-  theme_bw()+
-  theme(legend.position = "none",
-        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "Day 1 at 11am minute as facet")+
-  facet_wrap(.~ minute)
-
-rm( GPS_data_sf_trans_17, GPS_data_sf_trans_17_Hr_11)
-
-
-# --------------------------------------------------------------------------------------------------------------------- #
-
-
-
-
-
-
 
 
 
 
 ################################################################################
-#### filtering out data based on times start of training period to the end of the trial ####
+#### filtering out data based on times trail 28/6- 9:50 and end 2/7- at 10:10 – this is based on the times Dana gave me
 
 # start of trial and training period (according to sue) - keep everything after  17th 11:35 or 11:40 s above
 
 animal_GPS_data_sf_trans <- animal_GPS_data_sf_trans %>% 
   filter(
-  local_time >=  ymd_hms("2022-10-17 11:40:00", tz= "Australia/Adelaide"))
+  local_time >=  ymd_hms("2022-06-28 09:50:00", tz= "Australia/Sydney"))
 
 animal_GPS_data_sf_trans <- animal_GPS_data_sf_trans %>% 
   filter(
-    local_time <=  ymd_hms("2022-10-21 11:50:00", tz= "Australia/Adelaide"))
+    local_time <=  ymd_hms("2022-07-02 10:10:00", tz= "Australia/Sydney"))
 
 
 
 
 
-### define a training period with new clm
-
-animal_GPS_data_sf_trans <- animal_GPS_data_sf_trans %>% 
-  mutate(training_period = case_when(
-    local_time <= ymd_hms("2022-10-17 13:10:00", tz= "Australia/Adelaide")~ "training",
-    TRUE                      ~ "non_training"
-    
-  ))
+###------------------------------ UP TO HERE ----------------------------------------#######
 
 
-
-
-
+# Times sheep were brought in each day for the VF Chiswick trial;
+# 28/6- sheep out 9:50
+# 29/6 11:21- 12:21
+# 30/6 10:34- 11:36
+# 1/7- 10:37- 11:20
+# 2/7- Brought in at 10:10
 #### each day the animals were yarded so i need to remove this data
 
 # let divide the data per day
-day_17 <- animal_GPS_data_sf_trans %>%  filter(date == "2022-10-17")
-day_18 <- animal_GPS_data_sf_trans %>%  filter(date == "2022-10-18")
-day_19 <- animal_GPS_data_sf_trans %>%  filter(date == "2022-10-19")
-day_20 <- animal_GPS_data_sf_trans %>%  filter(date == "2022-10-20")
-day_21 <- animal_GPS_data_sf_trans %>%  filter(date == "2022-10-21")
+day_28 <- animal_GPS_data_sf_trans %>%  filter(date == "2022-06-28")
+day_29 <- animal_GPS_data_sf_trans %>%  filter(date == "2022-06-29")
+day_30 <- animal_GPS_data_sf_trans %>%  filter(date == "2022-06-30")
+day_1 <- animal_GPS_data_sf_trans %>%  filter(date == "2022-07-01")
+day_2 <- animal_GPS_data_sf_trans %>%  filter(date == "2022-07-02")
 
 # keep everything after before yarding and after yarding
 
-day_18_before_yarding <- day_18 %>%
-  filter(local_time <=  ymd_hms("2022-10-18 09:40:00", tz = "Australia/Adelaide"))
-day_18_after_yarding <- day_18 %>%
-  filter(local_time >=  ymd_hms("2022-10-18 10:30:00", tz = "Australia/Adelaide"))
+day_29_before_yarding <- day_29 %>%
+  filter(local_time <=  ymd_hms("2022-06-29 11:21:00", tz = "Australia/Sydney"))
+day_29_after_yarding <- day_29 %>%
+  filter(local_time >=  ymd_hms("2022-06-29 12:21:00", tz = "Australia/Sydney"))
                   
-day_18_clean <- rbind(day_18_before_yarding, day_18_after_yarding)
-rm(day_18_before_yarding, day_18_after_yarding, day_18)
+day_29_clean <- rbind(day_29_before_yarding, day_29_after_yarding)
+rm(day_29_before_yarding, day_29_after_yarding, day_29)
 
 
-day_19_before_yarding <- day_19 %>%
-  filter(local_time <=  ymd_hms("2022-10-19 09:10:00", tz = "Australia/Adelaide"))
-day_19_after_yarding <- day_19 %>%
-  filter(local_time >=  ymd_hms("2022-10-19 10:18:00", tz = "Australia/Adelaide"))
+day_30_before_yarding <- day_30 %>%
+  filter(local_time <=  ymd_hms("2022-06-30 10:34:00", tz = "Australia/Sydney"))
+day_30_after_yarding <- day_30 %>%
+  filter(local_time >=  ymd_hms("2022-06-30 11:36:00", tz = "Australia/Sydney"))
 
-day_19_clean <- rbind(day_19_before_yarding, day_19_after_yarding)
-rm(day_19_before_yarding, day_19_after_yarding, day_19)
+day_30_clean <- rbind(day_30_before_yarding, day_30_after_yarding)
+rm(day_30_before_yarding, day_30_after_yarding, day_30)
 
+day_1_before_yarding <- day_1 %>%
+  filter(local_time <=  ymd_hms("2022-07-01 10:37:00", tz = "Australia/Sydney"))
+day_1_after_yarding <- day_1 %>%
+  filter(local_time >=  ymd_hms("2022-07-01 11:20:00", tz = "Australia/Sydney"))
 
-
-day_20_before_yarding <- day_20 %>%
-  filter(local_time <=  ymd_hms("2022-10-20 08:58:00", tz = "Australia/Adelaide"))
-day_20_after_yarding <- day_20 %>%
-  filter(local_time >=  ymd_hms("2022-10-20 10:19:00", tz = "Australia/Adelaide"))
-
-day_20_clean <- rbind(day_20_before_yarding, day_20_after_yarding)
-rm(day_20_before_yarding, day_20_after_yarding, day_20)
+day_1_clean <- rbind(day_1_before_yarding, day_1_after_yarding)
+rm(day_1_before_yarding, day_1_after_yarding, day_1)
 
 
 ### put it back togther 
 
-animals_GPS_trim_time <- rbind(day_17, day_18_clean, day_19_clean, day_19_clean, day_20_clean, day_21)
+animals_GPS_trim_time <- rbind(day_28, day_29_clean, day_30_clean, day_1_clean, day_2)
 
-rm(day_17, day_18_clean, day_19_clean, day_21, day_20_clean, animal_GPS_data_sf_trans)
+rm(day_28, day_29_clean, day_30_clean, day_1_clean, day_2)
 
 ########################################################################################
 
@@ -398,16 +285,16 @@ animals_GPS_trim_time <- animals_GPS_trim_time %>%
 
 
 ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area_buffer_10, color = "black", fill = NA) +
-  geom_sf(data = water_pt ,color ="Blue") +
-  geom_sf(data = animals_GPS_trim_time ,alpha = 0.05) +
+  geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
+  geom_sf(data = VF_paddock, color = "black", fill = NA) +
+  geom_sf(data = Chiswick_hard_fence_bound_buff, color = "black", fill = NA) +
+  #geom_sf(data = water_pts_sf ,color ="Blue") +
+  geom_sf(data = animal_GPS_data_sf_trans ,alpha = 0.05) +
   facet_wrap(.~ date)+
   theme_bw()+
   theme(legend.position = "none",
         axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "All animal logs between 17th at 11:40 and 21st at 11:50",
+  labs(title = "All animal logs between 28/6 at 09:50 and 27/7 at 10:10",
   subtitle = "log when animals were yarded removed")
 
 
@@ -427,7 +314,7 @@ ggplot() +
 
 
 
-output_path <- "W:/VF/Sheep_Lameroo_2022/animal_logs/jax_working"  #animals_GPS_trim_time
+output_path <- "W:/VF/Sheep_Chiswick_2022/animal_logs/jax_working"  #animals_GPS_trim_time
 
 
 ############################################################################################################################
