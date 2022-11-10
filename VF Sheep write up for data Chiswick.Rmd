@@ -244,6 +244,8 @@ For example in the 10 min window the animals has spent 37% of the time resting, 
 - Formats timeOfEvent clm to be GMT
 - Creates local time clm, date clm, DOY clm.
 - Creates sheep_ID clm using deviceName using table listed above (inputs supplied by Sue)
+- Only keeps records with deviceName matching Sues list
+- Removes records with fenceID = NULL
 - Remove any data entries with no GPS logs
 - Turn into spatial data and transform to ESPG 28355 (GDA/MGA zone 55)
 - Filter out (remove) data before trial and after end of the trial, this is detailed above, 28/06/2022 at 09:50 to 02/07/2022 at 10:10
@@ -309,7 +311,7 @@ ggplot() +
   theme(legend.position = "none",
         axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
   labs(title = "All animal logs between 28/06/2022 at 09:50 to 02/07/2022",
-  subtitle = "log when animals were yarded removed")
+  subtitle = "log when animals were yarded removed - Data not clipped to paddock boundary")
 
 
 ```
@@ -378,6 +380,8 @@ AIM: Across all animals, and by individual animal (could be interesting to see i
 
 This is a 2 step process.
 
+Step 1
+
 - the "animal_GPS_data_step1_2_3.csv" is summaries based on animal, and day.
 - the sum of audio and pulse value are calculated
 - ratio values are taken, I am not sure the best approach
@@ -391,7 +395,7 @@ Step 2
 - take the above summaries on audio pulse and ratio and create average values over the trial period.
 
 
-```{r step 1 data for cue plots, message=FALSE, warning=FALSE, include=FALSE}
+```{r step 1 data for cue plots data, message=FALSE, warning=FALSE, include=FALSE}
 
 step1_2_3 <- read_csv("W:/VF/Sheep_Chiswick_2022/animal_logs/jax_working/animal_GPS_data_step1_2_3.csv")
 
@@ -532,85 +536,118 @@ summary_audio_ratio_all_long_v2
 
 ```
 
+```{r av cue per animal, message=FALSE, warning=FALSE, include=FALSE}
+summary_audio_ratio_per_animal <- summary_audio_ratio %>% 
+  dplyr::group_by(Sheep_ID) %>% 
+  dplyr::summarise(audio_av = mean(audio_sum, na.rm = TRUE),
+                   pulse_av = mean(pulse_sum, na.rm = TRUE),
+                   
+                   std_dev_Av_Audio = sd(audio_sum, na.rm = TRUE),
+                   SE_Av_Audio = std_dev_Av_Audio / sqrt(n()),
+                   
+                   std_dev_Av_Pulse = sd(pulse_sum, na.rm = TRUE),
+                   SE_Av_Pulse = std_dev_Av_Pulse / sqrt(n()),
+                   
+                   ratio_1_mean = mean(ratio_sum1, na.rm= TRUE),
+                   ratio_2_mean = mean(ratio_sum2, na.rm= TRUE),
+                   
+                   std_dev_Av_Ratio_1 = sd(ratio_sum1, na.rm = TRUE),
+                   SE_Av_std_dev_Av_Ratio_1 = std_dev_Av_Ratio_1 / sqrt(n()),
+                   
+                   std_dev_Av_Ratio_2 = sd(ratio_sum2, na.rm = TRUE),
+                   SE_Av_std_dev_Av_Ratio_2 = std_dev_Av_Ratio_2 / sqrt(n())
+                   
+  )
+summary_audio_ratio_per_animal
+
+
+summary_audio_ratio_per_animal_long <- summary_audio_ratio_per_animal %>% 
+  pivot_longer(cols=c('audio_av':"SE_Av_std_dev_Av_Ratio_2"),
+               names_to='cue',
+               values_to='value')
+summary_audio_ratio_per_animal_long
+
+
+
+
+```
+
+
+```{r av cue per animal plots, echo=FALSE, message=FALSE, warning=FALSE}
+
+summary_audio_ratio_per_animal_long %>%
+  filter(cue == "audio_av" | cue == "pulse_av" ) %>% 
+  ggplot(aes(x = cue , y = value)) +
+  geom_col()+
+  theme_classic() +
+  facet_wrap(.~ Sheep_ID)+
+  theme(axis.text.x = element_text(angle = 90))+
+  labs(
+    y = "Avearge cue for animals ",
+    title = "Average of cue values per animal over the trial period",
+    subtitle = "Note Audio and pulse counts summed per day and animal and then ratio calulated 
+    then average taken per animal over trial period")
+
+```
+
+
+```{r av ratio per animal plots, echo=FALSE, message=FALSE, warning=FALSE}
+
+summary_audio_ratio_per_animal_long %>%
+  filter(cue == "ratio_1_mean" | cue == "ratio_2_mean" ) %>% 
+  ggplot(aes(x = cue , y = value)) +
+  geom_col()+
+  theme_classic() +
+  facet_wrap(.~ Sheep_ID)+
+  theme(axis.text.x = element_text(angle = 90))+
+  labs(
+    y = "Avearge ratio of cue data ",
+    title = "Average of ratio of cue values per animal over the trial period",
+    subtitle = "Note Audio and pulse counts summed per day and animal and then ratio calulated 
+    then average taken per animal over trial period")
+
+```
+
+
+
+```{r cue per animal summary table, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+summary_audio_ratio_per_animal_long$value <- round(summary_audio_ratio_per_animal_long$value,2) 
+
+summary_audio_ratio_all_long_v2
+
+ 
+
+```
 
 ## GPS Plots
 
 AIM: Daily plots are probably sufficient. 
 
+Still waiting for water points.
 
 
 ```{r GPS plots trail only, echo=FALSE, message=FALSE, warning=FALSE}
 
-step1_2_3_sf_trial_only <- step1_2_3_sf %>% 
-  filter(training_period == "non_training")
-
-ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = water_pt ,color ="Blue") +
-  geom_sf(data = step1_2_3_sf_trial_only ,alpha = 0.05) +
+plot1 <- ggplot() +
+  geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
+  geom_sf(data = VF_paddock, color = "black", fill = NA) +
+  #geom_sf(data = water_pt ,color ="Blue") +
+  
+  
+  geom_sf(data = step1_2_3_sf ,alpha = 0.05) +
   facet_wrap(.~ date)+
   theme_bw()+
   theme(legend.position = "none",
         axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "Animal logs in during trial",
+  labs(title = "Animal logs",
        subtitle = "log when animals were yarded removed, and clipped to 10 meter buffer")
+plot1
 ```
 
 
 
 
-### DAY 1 only - hours as a facet wrap
 
-
-```{r GPS plots day 1 only, echo=FALSE, message=FALSE, warning=FALSE}
-step1_2_3_sf_day1 <- step1_2_3_sf %>% filter(date=="2022-10-17")
-
-step1_2_3_sf_day1 <- step1_2_3_sf_day1 %>% 
-  mutate(hour = hour(local_time),
-         minute = minute(local_time))
-
-step1_2_3_sf_day1$training_period <- factor(step1_2_3_sf_day1$training_period,
-                                                            levels = c("training", "non_training"))    
-
-
-ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = water_pt ,color ="Blue") +
-  geom_sf(data = step1_2_3_sf_day1 ,alpha = 0.08) +
-    theme_bw()+
-  facet_wrap(training_period~ hour)+
-  theme(legend.position = "none",
-        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "Animal logs on 1st day")
-```
-
-
-
-### DAY 4 only - hours as a facet wrap
-
-
-```{r GPS plots day 4 only, echo=FALSE, message=FALSE, warning=FALSE}
-step1_2_3_sf_day4 <- step1_2_3_sf %>% filter(date=="2022-10-20")
-
-step1_2_3_sf_day4 <- step1_2_3_sf_day4 %>% 
-  mutate(hour = hour(local_time),
-         minute = minute(local_time))
-
-step1_2_3_sf_day4$training_period <- factor(step1_2_3_sf_day4$training_period,
-                                                            levels = c("training", "non_training"))    
-
-
-ggplot() +
-  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
-  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
-  geom_sf(data = water_pt ,color ="Blue") +
-  geom_sf(data = step1_2_3_sf_day4 ,alpha = 0.08) +
-    theme_bw()+
-  facet_wrap(.~ hour)+
-  theme(legend.position = "none",
-        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "Animal logs on 4th day")
-```
 
