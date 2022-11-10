@@ -1,0 +1,616 @@
+---
+title: "VF Sheep"
+author: "Jackie"
+date: "2022-11-02"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r lib, include=FALSE}
+library(dplyr)
+library(tidyverse)
+library(readr)
+library(lubridate)
+library(DT)
+library(sp)
+
+
+library(rgdal)
+library(sf)
+
+#install.packages("plotKML")
+library(plotKML)
+library(knitr)
+library(png)
+
+library(readxl)
+
+
+library(ggmap)
+library(maps)
+library(mapdata)
+
+library(raster)
+library(agricolae)
+library(FSA) 
+library(agricolae)
+library(multcomp)
+library(lsmeans)
+#library(hms) Add these before I use them?
+#library(plyr)
+
+library(readxl)
+library(tidyverse)
+library(dplyr)
+library(FSA) 
+library(agricolae)
+library(multcomp)
+library(multcomp)
+library(lsmeans)
+library(multcompView)
+library(Rmisc)
+
+library(ggplot2)
+library(car)
+library(DescTools)
+```
+
+## Aim of the trial
+
+To implement VF collars, and ensure the collars are safe and effective.
+
+Evaluate the cue and pulse data and animal movement during the trail.
+
+## Location of the trial
+
+The trial is located in Chiswick -30.609964°, 151.547713°.
+
+The paddock boundaries are digitized using google earth pro.
+
+The thiner line is a 10m buffer around the paddock boundaries.
+
+
+```{r Chiswick paddock bounadries hard fences, echo=FALSE, message=FALSE, warning=FALSE}
+
+include_graphics("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/Chiswick_paddock_boundary and VF.png")
+
+```
+
+## Length and dates of the trial
+
+- Start of trial 28/06/2022 at 09:50
+- End of trail   02/07/2022 at 10:10
+
+These animals had no real training time.
+
+Although the animals allowed to rest in small holding pen to give them time to adjust to harnesses and collars and to ensure correct fit (for about 30 mins). 
+
+This was done in the a paddock outside the trial paddock. (see email from Jim Wednesday, 9 November 2022 3:16 PM for more details).
+
+This group of animals had previous experience ( a few weeks earlier) of harness and/or collars, as well as some handling, but NO exposure at all to actual Virtual fencing cues/fences etc.
+
+I have not digitised the holding pen or actively removed this data.
+Some of the data will be removed when the GPS is clipped to the paddock boundary (with a 10 meter buffer).
+ 
+
+
+The animals were yarded everyday and during this time collar and health check were performed.
+The collars continued to log during this time therefore the data needs to be cropped to reflect the only trial times
+
+
+- Day 1 28/06/2022 animals were not yarded the animals started the trial at  09:50
+- Day 2 29/06/2022 animals yarded in at 11:21 and back in trial paddock at   12:21
+- Day 3 30/06/2022 animals yarded in at 10:34 and back in trial paddock at   11:36
+- Day 4 01/07/2022 animals yarded in at 10:37 and back in trial paddock at   11:20
+- Day 8 02/07/2022 animals yarded in at 10:10 end of the trial
+
+
+
+## Animal collar used
+
+Sue will confirm collar 9380422, the data looks suss and I was wondering if it was replaced with another collar
+ 
+ 
+|  deviceName	    | Sheep ID   | Comments	                                                | 
+| ----------------| -----------|----------------                                          |
+| 9380422       	| 1   	     |This collar has not got many logs with active fence with trial times | 
+| 9380674	        | 2          |	                                                        |	
+| 9380743         |	3          |	                                                        |	
+| 9380451         | 4          |	                                                        |	
+| 9380265         |	5          |	                                                        | 
+
+   
+
+
+
+## Background information on animal collar data from Gallagher
+
+*Contact*
+
+The data scientist is:
+
+Debdeep Guha
+
+Gallagher eShepherd Pty Ltd
+
+1100-1102 Toorak Road, Camberwell, VIC, 3124
+
+
+EMAIL  Debdeep.Guha@gallagher.com| WEB www.gallagher.com
+
+**Data provided**
+
+Every 10 mins generates a new row of data, but if the animal get a audio or pulse this creates a new entry.
+
+This can be viewed from the timeOfEvent column.
+
+**timeOfEvent**
+
+Note that this timeOfEvent has a date and time stamp which is in GMT.
+
+The *timeOfEvent* will need to be converted to local time.
+
+This is done in R with lubridate package.
+
+**GPS**
+
+The GPS data is a snapshot of the location of the animals in a 10 min window.
+
+Data columns that are supplied:
+
+- *gpsData.lat*	
+- *gpsData.lng*
+
+
+I will use the lat and long column to create a location of the animal in the 10 min window.
+
+The accuracy of this reading can be viewed within this 10 min window.
+
+
+**Stimuli - cue and audio readings**
+
+The *cumulativeAudioCount* and	*cumulativeShockCount* columns are a running total of how many stimuli the animal has received since the start of the trial, and is re calculated every 10 mins.
+
+It appears that the increments are not reset when a new fence is implement.
+Instead its just keeps cumulating.
+
+This poses a problem when the animals are yarded, they are not part of the trial during this time, but the collars and cues continue to log.
+
+
+**Device details**
+
+The *deviceName* is the name of the collar, more details about the mob is listed above.
+
+
+There is another columns which has information about the device this is called *deviceUIDHex*.
+
+**Virtual Fence**
+
+There is a column which is called *minDistanceToIZ*, which is the distance of the animal to the VF.
+
+I am not sure if this is the min distance the animal got to the fence in the 10 min window or its the distance calculated from the logged GPS point in the file in the 10 mins window.
+
+If it is the min distance the animal got to and not just the distance from the fence in the 'snap shot' this would be useful.
+
+Column called *fencesID* is the name of the fence.
+
+
+
+*"If the values in “fenceID” column as blank, this means there is no active virtual fence for that neckband yet. Therefore, if you are performing some analysis related to virtual fencing, you can ignore those rows with blank fenceIDs."*
+
+
+**Animal activity**
+
+There are 3 columns that relate to the 
+
+- *resting%*	
+
+- *moving%*
+
+- *grazing%* 
+
+
+
+The first 3 should add up to 100% and this is a sum value for the 10 min of time.
+
+For example in the 10 min window the animals has spent 37% of the time resting, 30% moving and 33% grazing.
+
+## Location of raw data.
+
+- "\\FSSA2-ADL\clw-share1\Microlab\VF\Sheep_Chiswick_2022\raw_data\CSIRO Armidale Chiswick Updated.zip" 
+- "\\FSSA2-ADL\clw-share1\Microlab\VF\Sheep_Chiswick_2022\raw_data\trial_csiro_armidale_chiswick_vf_gps_location.csv"
+- "\\FSSA2-ADL\clw-share1\Microlab\VF\Sheep_Chiswick_2022\raw_data\db_trial_csiro_armidale_chiswick_mob_259_filtered.csv"
+
+
+
+# Data manipulation notes.
+
+## step 1 
+
+- **use step 1 scripts**
+
+  "C:\Users\ouz001\working_from_home_post_Sep2022\VF_Sheep_Chiswick_Trial\Chiswick_VF2022_data_analysis\step1_VF_animal_logs.R"
+  
+  This is in the GitHub repository too.
+  
+  https://github.com/JackieOuzman/Chiswick_VF2022
+
+- This does a few things and its a bit messey at time but this is what the script will do:
+- Imports in raw data 
+- Formats timeOfEvent clm to be GMT
+- Creates local time clm, date clm, DOY clm.
+- Creates sheep_ID clm using deviceName using table listed above (inputs supplied by Sue)
+- Remove any data entries with no GPS logs
+- Turn into spatial data and transform to ESPG 28355 (GDA/MGA zone 55)
+- Filter out (remove) data before trial and after end of the trial, this is detailed above, 28/06/2022 at 09:50 to 02/07/2022 at 10:10
+- Also removes any data entries that occur during yarding times, when daily checks were done.
+
+ 
+This data is saved 
+
+"\\FSSA2-ADL\clw-share1\Microlab\VF\Sheep_Chiswick_2022\animal_logs\jax_working\animals_GPS_trim_time_step1.csv"
+
+
+```{r step 1 data for plot, message=FALSE, warning=FALSE, include=FALSE}
+
+
+step1 <- read_csv("W:/VF/Sheep_Chiswick_2022/animal_logs/jax_working/animals_GPS_trim_time_step1.csv")
+
+#turn into spatial data
+step1_sf <-   st_as_sf(step1,
+           coords = c("X", "Y"),
+           crs = 28355,
+           agr = "constant")
+
+############################################################################################
+############                  bring in boundaries             ##############################
+############################################################################################
+
+
+Chiswick_hard_fence_bound <- st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/Chiswick_paddock_boundary_final.shp")  # this is the hard fences
+
+Chiswick_hard_fence_bound <-
+  st_transform(Chiswick_hard_fence_bound, crs = 28355)
+
+
+Chiswick_hard_fence_bound_buff <- st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/Chiswick_paddock_boundary_final_buff10.shp")  # this is the 
+
+Chiswick_hard_fence_bound_buff <-
+  st_transform(Chiswick_hard_fence_bound_buff, crs = 28355)
+
+
+VF_paddock <-   st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/VF_paddock.shp")
+
+VF_paddock <-  st_transform(VF_paddock, crs = 28355)
+
+#water_pt <-  st_read("W:/VF/Sheep_Lameroo_2022/spatial_boundary/water_pts.shp")
+
+
+
+
+
+```
+
+
+```{r step 1  plot, echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot() +
+  geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
+  geom_sf(data = VF_paddock, color = "black", fill = NA) +
+  #geom_sf(data = water_pt ,color ="Blue") +
+  
+  geom_sf(data = step1_sf ,alpha = 0.05) +
+  facet_wrap(.~ date)+
+  theme_bw()+
+  theme(legend.position = "none",
+        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
+  labs(title = "All animal logs between 28/06/2022 at 09:50 to 02/07/2022",
+  subtitle = "log when animals were yarded removed")
+
+
+```
+
+
+## step 2
+
+- **use step 2 scripts**
+
+  "C:\Users\ouz001\working_from_home_post_Sep2022\VF_Sheep_Chiswick_Trial\Chiswick_VF2022_data_analysis\step2_converting_cum_value_to_records.R"
+  
+  This is in the GitHub repository too.
+  
+  https://github.com/JackieOuzman/Chiswick_VF2022
+
+- This builds on the data frame produced in step 1
+- Aim is to recreate the audio and pulse columns that are not cumulative 
+- The *cumulativeAudioCount* and	*cumulativeShockCount* columns are a running total of how many stimuli the animal has received since the  
+start of the trial, and is re calculated every 10 mins. 
+- Since the animals were yarded but the collar continued to log this is a problem.
+- Creates a list of animals based on DeviceName and then runs a loop.
+- The loop filters the animal log data (created in step 1) based on the DeviceName in list and created a new clm
+- The clm is AudioValue and PulseValue using lag function e.g. Audio_values = cumulativeAudioCount - lag(cumulativeAudioCount
+
+
+This data is saved 
+
+"\\FSSA2-ADL\clw-share1\Microlab\VF\Sheep_Chiswick_2022\animal_logs\jax_working\animal_GPS_data_step1_2.csv"
+
+
+
+## step 3
+
+- **use step 3 scripts**
+
+  "C:\Users\ouz001\working_from_home_post_Sep2022\VF_Sheep_Chiswick_Trial\Chiswick_VF2022_data_analysis\step 3 clipping the aniamls logs to bounadries.R"
+  
+  This is in the GitHub repository too.
+  
+ https://github.com/JackieOuzman/Chiswick_VF2022
+  
+- This builds on the data frame produced in step 1 and 2
+- Aim is to clip the data to the hard fence paddock boundaries 
+- The GPS has 5 - 10m accuracy (but I have always thought this was better than this)
+- I have clipped step 1_2 df to the paddock boundaries with a 10 m buffer using st_intersection tool.
+- I have removed any data entries that has no Fence ID.
+  
+This data is saved 
+  
+  "W:\VF\Sheep_Chiswick_2022\animal_logs\jax_working\animal_GPS_data_step1_2_3.csv"
+
+
+
+
+
+
+
+
+
+
+## Mean audio/pulse ratio 
+
+AIM: Across all animals, and by individual animal (could be interesting to see if they vary as cattle do?). 
+
+
+
+This is a 2 step process.
+
+- the "animal_GPS_data_step1_2_3.csv" is summaries based on animal, and day.
+- the sum of audio and pulse value are calculated
+- ratio values are taken, I am not sure the best approach
+- ratio 1 = audio_sum/ (pulse_sum+audio_sum )*100
+- ratio 2 = pulse_sum/ (audio_sum )*100
+
+The above will give us the sum values and associated ratio for each animal on each day.
+
+Step 2
+
+- take the above summaries on audio pulse and ratio and create average values over the trial period.
+
+
+```{r step 1 data for cue plots, message=FALSE, warning=FALSE, include=FALSE}
+
+step1_2_3 <- read_csv("W:/VF/Sheep_Chiswick_2022/animal_logs/jax_working/animal_GPS_data_step1_2_3.csv")
+
+#turn into spatial data
+step1_2_3_sf <-   st_as_sf(step1_2_3,
+                       coords = c("X", "Y"),
+                       crs = 28355,
+                       agr = "constant")
+
+# step 1 summaries audio and pulse per animal per day also training period 
+summary_audio_ratio <- step1_2_3_sf %>% 
+  dplyr::group_by(Sheep_ID, date) %>% 
+  dplyr::summarise(audio_sum = sum(Audio_values, na.rm = TRUE),
+            pulse_sum = sum(Shock_values, na.rm = TRUE),
+            ratio_sum1 = audio_sum/ (pulse_sum+audio_sum )*100,
+            ratio_sum2 = pulse_sum/ (audio_sum )*100)
+  
+
+
+summary_audio_ratio$ratio_sum1 [is.nan(summary_audio_ratio$ratio_sum1 )]<-NA
+summary_audio_ratio$ratio_sum2 [is.nan(summary_audio_ratio$ratio_sum2 )]<-NA
+
+names(summary_audio_ratio)
+
+
+summary_audio_ratio <- ungroup(summary_audio_ratio)
+
+summary_audio_ratio
+# step 2 summaries audio and pulse per animal per day also training period 
+
+summary_audio_ratio_all <- summary_audio_ratio %>% 
+  dplyr::group_by() %>% 
+  dplyr::summarise(audio_av = mean(audio_sum, na.rm = TRUE),
+            pulse_av = mean(pulse_sum, na.rm = TRUE),
+            
+            std_dev_Av_Audio = sd(audio_sum, na.rm = TRUE),
+            SE_Av_Audio = std_dev_Av_Audio / sqrt(n()),
+            
+            std_dev_Av_Pulse = sd(pulse_sum, na.rm = TRUE),
+            SE_Av_Pulse = std_dev_Av_Pulse / sqrt(n()),
+            
+            ratio_1_mean = mean(ratio_sum1, na.rm= TRUE),
+            ratio_2_mean = mean(ratio_sum2, na.rm= TRUE),
+            
+            std_dev_Av_Ratio_1 = sd(ratio_sum1, na.rm = TRUE),
+            SE_Av_std_dev_Av_Ratio_1 = std_dev_Av_Ratio_1 / sqrt(n()),
+            
+            std_dev_Av_Ratio_2 = sd(ratio_sum2, na.rm = TRUE),
+            SE_Av_std_dev_Av_Ratio_2 = std_dev_Av_Ratio_2 / sqrt(n())
+            
+            )
+ 
+summary_audio_ratio_all <- as.data.frame(summary_audio_ratio_all)
+
+summary_audio_ratio_all <- summary_audio_ratio_all %>%dplyr::select(
+                audio_av ,  
+                pulse_av  ,   
+                std_dev_Av_Audio ,
+                SE_Av_Audio , 
+                std_dev_Av_Pulse ,
+                SE_Av_Pulse,  
+                ratio_1_mean  ,
+                ratio_2_mean , 
+                std_dev_Av_Ratio_1  ,    
+                SE_Av_std_dev_Av_Ratio_1 , 
+                std_dev_Av_Ratio_2,
+                SE_Av_std_dev_Av_Ratio_2)
+
+ 
+
+### lets make df long
+summary_audio_ratio_all_long <- summary_audio_ratio_all %>% 
+  dplyr::select(audio_av ,pulse_av, ratio_1_mean, ratio_2_mean) %>% 
+  pivot_longer(cols=c('audio_av', 'pulse_av',"ratio_1_mean", "ratio_2_mean"),
+                      names_to='cue',
+                      values_to='value')
+
+
+
+
+
+
+
+```
+
+
+```{r step 1 data for cue plots, echo=FALSE, message=FALSE, warning=FALSE}
+summary_audio_ratio_all_long %>%
+  filter(cue == "audio_av" | cue == "pulse_av" ) %>% 
+  ggplot(aes(x = cue , y = value)) +
+  geom_col()+
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90))+
+  labs(
+    y = "Avearge cue for animals ",
+    title = "Average cue values for all animals over the trial period",
+    subtitle = "Note Audio and pulse counts summed per day and animal and then ratio calulated 
+    then average taken of all animals over trial period")
+
+
+
+```
+
+```{r step 1 data for ratio plots, echo=FALSE, message=FALSE, warning=FALSE}
+summary_audio_ratio_all_long %>%
+  filter(cue == "ratio_1_mean" | cue == "ratio_2_mean" ) %>% 
+  ggplot(aes(x = cue , y = value)) +
+  geom_col()+
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90))+
+  labs(
+    y = "Avearge cue for animals ",
+    title = "Average of ratio values for all animals over the trial period",
+    subtitle = "Note Audio and pulse counts summed per day and animal and then ratio calulated 
+    then average taken of the ratio values - all animals over trial period")
+
+
+
+
+```
+
+
+
+
+```{r cue plots summary table, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+summary_audio_ratio_all_long_v2 <- summary_audio_ratio_all %>% 
+  pivot_longer(cols=c('audio_av':"SE_Av_std_dev_Av_Ratio_2"),
+               names_to='cue',
+               values_to='value')
+
+summary_audio_ratio_all_long_v2$value <- round(summary_audio_ratio_all_long_v2$value,2) 
+
+summary_audio_ratio_all_long_v2
+
+ 
+
+```
+
+
+## GPS Plots
+
+AIM: Daily plots are probably sufficient. 
+
+
+
+```{r GPS plots trail only, echo=FALSE, message=FALSE, warning=FALSE}
+
+step1_2_3_sf_trial_only <- step1_2_3_sf %>% 
+  filter(training_period == "non_training")
+
+ggplot() +
+  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
+  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
+  geom_sf(data = water_pt ,color ="Blue") +
+  geom_sf(data = step1_2_3_sf_trial_only ,alpha = 0.05) +
+  facet_wrap(.~ date)+
+  theme_bw()+
+  theme(legend.position = "none",
+        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
+  labs(title = "Animal logs in during trial",
+       subtitle = "log when animals were yarded removed, and clipped to 10 meter buffer")
+```
+
+
+
+
+### DAY 1 only - hours as a facet wrap
+
+
+```{r GPS plots day 1 only, echo=FALSE, message=FALSE, warning=FALSE}
+step1_2_3_sf_day1 <- step1_2_3_sf %>% filter(date=="2022-10-17")
+
+step1_2_3_sf_day1 <- step1_2_3_sf_day1 %>% 
+  mutate(hour = hour(local_time),
+         minute = minute(local_time))
+
+step1_2_3_sf_day1$training_period <- factor(step1_2_3_sf_day1$training_period,
+                                                            levels = c("training", "non_training"))    
+
+
+ggplot() +
+  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
+  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
+  geom_sf(data = water_pt ,color ="Blue") +
+  geom_sf(data = step1_2_3_sf_day1 ,alpha = 0.08) +
+    theme_bw()+
+  facet_wrap(training_period~ hour)+
+  theme(legend.position = "none",
+        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
+  labs(title = "Animal logs on 1st day")
+```
+
+
+
+### DAY 4 only - hours as a facet wrap
+
+
+```{r GPS plots day 4 only, echo=FALSE, message=FALSE, warning=FALSE}
+step1_2_3_sf_day4 <- step1_2_3_sf %>% filter(date=="2022-10-20")
+
+step1_2_3_sf_day4 <- step1_2_3_sf_day4 %>% 
+  mutate(hour = hour(local_time),
+         minute = minute(local_time))
+
+step1_2_3_sf_day4$training_period <- factor(step1_2_3_sf_day4$training_period,
+                                                            levels = c("training", "non_training"))    
+
+
+ggplot() +
+  geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
+  geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
+  geom_sf(data = water_pt ,color ="Blue") +
+  geom_sf(data = step1_2_3_sf_day4 ,alpha = 0.08) +
+    theme_bw()+
+  facet_wrap(.~ hour)+
+  theme(legend.position = "none",
+        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
+  labs(title = "Animal logs on 4th day")
+```
+
