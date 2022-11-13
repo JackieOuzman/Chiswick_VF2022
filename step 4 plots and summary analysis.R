@@ -66,7 +66,7 @@ check <-
                            training_period)
 
 
-### UP TO HERE ####
+
 
 
 ## TASK Mean audio/pulse ratio AIM: Across all animals
@@ -173,19 +173,32 @@ names(step1_2_3_sf)
 step1_2_3_sf_trial_only <- step1_2_3_sf %>% 
   filter(training_period == "non_training")
 
+#### ------------------ PLOTS FOR DANA AND PAPER 10/11/2022-----------------------------#####
 
-
-plot() +
+plot1 <- ggplot() +
   geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
+  geom_sf(data = Lameroo_Vf_area_hard_fence_bound_buff, color = "black",linetype = "dotted", size = 0.5, fill = NA) +
+  
   geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
   geom_sf(data = water_pt ,color ="Blue") +
   geom_sf(data = step1_2_3_sf_trial_only ,alpha = 0.05) +
   facet_wrap(.~ date)+
   theme_bw()+
   theme(legend.position = "none",
-        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "Animal logs in during trial",
-       subtitle = "log when animals were yarded removed, and clipped to 10 meter buffer")
+        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())#+
+  # labs(title = "Animal logs in during trial",
+  #      subtitle = "log when animals were yarded removed, and clipped to 10 meter buffer")
+plot1
+
+
+ggsave(plot1,
+       device = "png",
+       filename = paste0("Lameroo_sheep_all_days_noTitle_Buffer_bound.png"),
+       path= "W:/VF/Sheep_Lameroo_2022/R_scripts/plots/",
+       width=8.62,
+       height = 6.28,
+       dpi=600
+)
 
 
 ### DAY 1 only 
@@ -198,23 +211,31 @@ step1_2_3_sf_day1 <- step1_2_3_sf_day1 %>%
          minute = minute(local_time))
 
 step1_2_3_sf_day1$training_period <- factor(step1_2_3_sf_day1$training_period,
-                                                            levels = c("training", "non_training"))    
+                                                            levels = c("training", "non training"))    
 
+step1_2_3_sf_day1_training <-step1_2_3_sf_day1 %>%  filter(training_period == "training")
+step1_2_3_sf_day1_Non_training <-step1_2_3_sf_day1 %>%  filter(training_period == "non_training")
 
 day1 <- ggplot() +
   geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
+  geom_sf(data = Lameroo_Vf_area_hard_fence_bound_buff, color = "black",linetype = "dotted", size = 0.5, fill = NA) +
+  
   geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
   geom_sf(data = water_pt ,color ="Blue") +
-  geom_sf(data = step1_2_3_sf_day1 ,alpha = 0.08) +
+  
+  geom_sf(data = step1_2_3_sf_day1_training ,alpha = 0.08, color = "red") +
+  geom_sf(data = step1_2_3_sf_day1_Non_training ,alpha = 0.08, color = "black") +
+  
     theme_bw()+
-  facet_wrap(training_period~ hour)+
-  theme(legend.position = "none",
-        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "Animal logs on first day")
+  facet_wrap(. ~ hour)+
+  theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())#+
+  #labs(title = "Animal logs on first day")
+day1
+
 
 ggsave(day1,
        device = "png",
-       filename = paste0("Lameroo_sheep_day1.png"),
+       filename = paste0("Lameroo_sheep_day1_diff_colour_buff_bound_no_title.png"),
        path= "W:/VF/Sheep_Lameroo_2022/R_scripts/plots/",
        width=8.62,
        height = 6.28,
@@ -236,20 +257,29 @@ step1_2_3_sf_day4$training_period <- factor(step1_2_3_sf_day4$training_period,
 day4 <-ggplot() +
   geom_sf(data = Lameroo_Vf_area_hard_fence_bound, color = "black", fill = NA) +
   geom_sf(data = Lameroo_Vf_area, color = "black", fill = NA) +
+  geom_sf(data = Lameroo_Vf_area_hard_fence_bound_buff, color = "black",linetype = "dotted", size = 0.5, fill = NA) +
+  
   geom_sf(data = water_pt ,color ="Blue") +
+  
   geom_sf(data = step1_2_3_sf_day4 ,alpha = 0.08) +
   theme_bw()+
-  facet_wrap(.~ hour)+
+  facet_wrap(.~ hour,  nrow = 3)+
   theme(legend.position = "none",
-        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())+
-  labs(title = "Animal logs on 4th day")
-
+        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())#+
+  #labs(title = "Animal logs on 4th day")
+day4
 
 ggsave(day4,
        device = "png",
-       filename = paste0("Lameroo_sheep_day4.png"),
+       filename = paste0("Lameroo_sheep_day4_no_title_buff_bound.png"),
        path= "W:/VF/Sheep_Lameroo_2022/R_scripts/plots/",
        width=8.62,
        height = 6.28,
        dpi=600
 )
+
+
+
+
+
+
