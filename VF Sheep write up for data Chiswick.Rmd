@@ -117,12 +117,12 @@ Sue will confirm collar 9380422, the data looks suss and I was wondering if it w
  
 |  deviceName	    | Sheep ID   | Comments	                                                | 
 | ----------------| -----------|----------------                                          |
-| 9380422       	| 1   	     |This collar has not got many logs with active fence with trial times | 
+| 9380142       	| 1   	     |                                                          |
 | 9380674	        | 2          |	                                                        |	
 | 9380743         |	3          |	                                                        |	
 | 9380451         | 4          |	                                                        |	
 | 9380265         |	5          |	                                                        | 
-
+| 9380470         |	6          |	                                                        | 
    
 
 
@@ -289,7 +289,7 @@ VF_paddock <-   st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/VF_paddock
 
 VF_paddock <-  st_transform(VF_paddock, crs = 28355)
 
-#water_pt <-  st_read("W:/VF/Sheep_Lameroo_2022/spatial_boundary/water_pts.shp")
+water_pt <-  st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/water_pt.shp")
 
 
 
@@ -303,7 +303,7 @@ VF_paddock <-  st_transform(VF_paddock, crs = 28355)
 ggplot() +
   geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
   geom_sf(data = VF_paddock, color = "black", fill = NA) +
-  #geom_sf(data = water_pt ,color ="Blue") +
+  geom_sf(data = water_pt ,color ="Blue") +
   
   geom_sf(data = step1_sf ,alpha = 0.05) +
   facet_wrap(.~ date)+
@@ -507,7 +507,7 @@ summary_audio_ratio_all_long %>%
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90))+
   labs(
-    y = "Avearge cue for animals ",
+    y = "Avearge ratio for animals ",
     title = "Average of ratio values for all animals over the trial period",
     subtitle = "Note Audio and pulse counts summed per day and animal and then ratio calulated 
     then average taken of the ratio values - all animals over trial period")
@@ -633,7 +633,7 @@ Still waiting for water points.
 plot1 <- ggplot() +
   geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
   geom_sf(data = VF_paddock, color = "black", fill = NA) +
-  #geom_sf(data = water_pt ,color ="Blue") +
+  geom_sf(data = water_pt ,color ="Blue") +
   
   
   geom_sf(data = step1_2_3_sf ,alpha = 0.05) +

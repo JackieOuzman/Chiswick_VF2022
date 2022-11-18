@@ -58,11 +58,12 @@ list_animals <-ungroup(list_animals)
 
 list_animals$deviceName[1:34]
 list_animals <- c(
-  # 9380422, #the problem collar Sue is getting back to me if we need to use another collar
   9380265,
   9380451,
+  9380470 ,
   9380674,
-  9380743
+  9380743,
+  9380142 
   )
 
 
@@ -98,18 +99,21 @@ for (list_animals in list_animals){
 
 
 Fence_all <- rbind(
-  # temp_9380422, #the problem collar Sue is getting back to me if we need to use another collar
   temp_9380265,
   temp_9380451,
+  temp_9380470 ,
   temp_9380674,
-  temp_9380743
-
+  temp_9380743,
+  temp_9380142 
+  
 )
-rm( # temp_9380422, #the problem collar Sue is getting back to me if we need to use another collar
+rm( 
   temp_9380265,
   temp_9380451,
+  temp_9380470 ,
   temp_9380674,
-  temp_9380743
+  temp_9380743,
+  temp_9380142
   )
 
 

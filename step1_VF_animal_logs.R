@@ -11,7 +11,11 @@ library(sf)
 
 ### bring in animal logs for VF all
 
-animal_GPS_data <- read_csv("W:/VF/Sheep_Chiswick_2022/raw_data/db_trial_csiro_armidale_chiswick_mob_259_filtered.csv")
+animal_GPS_data_1 <- read_csv("W:/VF/Sheep_Chiswick_2022/raw_data/db_trial_csiro_armidale_chiswick_mob_259_filtered.csv")
+animal_GPS_data_2 <- read_csv("W:/VF/Sheep_Chiswick_2022/raw_data/db_trial_csiro_armidale_chiswick_neckband_serial_9380142_filtered.csv")
+
+animal_GPS_data <- rbind(animal_GPS_data_1, animal_GPS_data_2)
+
 #format time and date clm from character to time
 animal_GPS_data <-
   animal_GPS_data %>%
@@ -32,11 +36,12 @@ animal_GPS_data <- animal_GPS_data %>%
 ####    Assign collar to sheep names #####
 unique(animal_GPS_data$deviceName)
 #Sue suggests that these were the ones used via email Thu 3/11/2022 10:35 AM
-# 9380422
+# 9380422 - this was swapped for 142 (but I don't have 142 - got it now)
 # 9380674
 # 9380743
 # 9380451
 # 9380265
+# 9380470
 
 animal_GPS_data <- animal_GPS_data %>% 
   mutate(Sheep_ID = case_when(
@@ -47,11 +52,13 @@ animal_GPS_data <- animal_GPS_data %>%
     # deviceName == 9380479  ~ "5",
     # deviceName == 9380787 ~ "8",
     
-    deviceName == 9380422  ~ "1",
+    deviceName == 9380142  ~ "1",
     deviceName == 9380674  ~ "2",
     deviceName == 9380743  ~ "3",
     deviceName == 9380451  ~ "4",
     deviceName == 9380265  ~ "5",
+    deviceName == 9380470  ~ "6",
+    
     
     TRUE                      ~ "other"
     
@@ -62,43 +69,7 @@ animal_GPS_data <- animal_GPS_data %>%
   filter(Sheep_ID != "other")
 
 
-## I am having a spot of trouble with collar 9380422
 
- collar_9380422 <- animal_GPS_data %>% 
-   filter(deviceName== "9380422")
- max(collar_9380422$local_time)
- min(collar_9380422$local_time)
-
-# ### what are the fences callled in this dataset?
-# unique(animal_GPS_data$fencesID) # we only have 3: "1dd82" "1f1eb" "1766d"and NULL
-# 
-# ### when were these 3 fences active?
-# fence_1dd82 <- animal_GPS_data %>% 
-#   filter(fencesID== "1dd82")
-# 
-# max(fence_1dd82$local_time)
-# min(fence_1dd82$local_time)
-# 
-# fence_1f1eb <- animal_GPS_data %>% 
-#   filter(fencesID== "1f1eb")
-# 
-# max(fence_1f1eb$local_time)
-# min(fence_1f1eb$local_time)
-# 
-# fence_1766d <- animal_GPS_data %>% 
-#   filter(fencesID== "1766d")
-# 
-# max(fence_1766d$local_time)
-# min(fence_1766d$local_time)
-#rm(fence_1766d, fence_1dd82, fence_1f1eb)
-
-#looks like I will use 1dd82 so only keep these records - not super confident with this 
- #if I keep only these records I loose a sheep collar 9380422
- # I think more than one fence was used, but perhaps it wasnt recorded.
-
-# animal_GPS_data <- animal_GPS_data %>% 
-#      filter(fencesID== "1dd82")
-#    
 
 ## ok lets just remove the Nulls
   animal_GPS_data <- animal_GPS_data %>% 
@@ -168,7 +139,7 @@ VF_paddock <-   st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/VF_paddock
 
 VF_paddock <-  st_transform(VF_paddock, crs = 28355)
 
-#water_pt <-  st_read("W:/VF/Sheep_Lameroo_2022/spatial_boundary/water_pts.shp")
+water_pt <-  st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/water_pt.shp")
 
 
 
@@ -178,7 +149,7 @@ ggplot() +
   geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
   geom_sf(data = VF_paddock, color = "black", fill = NA) +
   geom_sf(data = Chiswick_hard_fence_bound_buff, color = "black", fill = NA) +
-  #geom_sf(data = water_pts_sf ,color ="Blue") +
+  geom_sf(data = water_pt ,color ="Blue") +
   geom_sf(data = animal_GPS_data_sf_trans ,alpha = 0.03) +
   theme_bw()+
   theme(legend.position = "none",
@@ -191,7 +162,7 @@ ggplot() +
   geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
   geom_sf(data = VF_paddock, color = "black", fill = NA) +
   geom_sf(data = Chiswick_hard_fence_bound_buff, color = "black", fill = NA) +
-  #geom_sf(data = water_pts_sf ,color ="Blue") +
+  geom_sf(data = water_pt ,color ="Blue") +
   geom_sf(data = animal_GPS_data_sf_trans ,alpha = 0.05) +
   theme_bw()+
   theme(legend.position = "none",
@@ -299,7 +270,7 @@ ggplot() +
   geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
   geom_sf(data = VF_paddock, color = "black", fill = NA) +
   geom_sf(data = Chiswick_hard_fence_bound_buff, color = "black", fill = NA) +
-  #geom_sf(data = water_pts_sf ,color ="Blue") +
+  geom_sf(data = water_pt ,color ="Blue") +
   geom_sf(data = animal_GPS_data_sf_trans ,alpha = 0.05) +
   facet_wrap(.~ date)+
   theme_bw()+

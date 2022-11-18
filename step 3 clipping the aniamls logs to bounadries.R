@@ -30,7 +30,7 @@ VF_paddock <-   st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/VF_paddock
 
 VF_paddock <-  st_transform(VF_paddock, crs = 28355)
 
-#water_pt <-  st_read("W:/VF/Sheep_Lameroo_2022/spatial_boundary/water_pts.shp")
+water_pt <-  st_read("W:/VF/Sheep_Chiswick_2022/spatial_boundaries/water_pt.shp")
 
 
 ############################################################################################
