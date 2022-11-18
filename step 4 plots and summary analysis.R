@@ -160,7 +160,7 @@ summary_audio_ratio_1
 plot1 <- ggplot() +
   geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
   geom_sf(data = VF_paddock, color = "black", fill = NA) +
-  geom_sf(data = Chiswick_hard_fence_bound_buff, color = "black", fill = NA) +
+  geom_sf(data = Chiswick_hard_fence_bound_buff, color = "black", fill = NA,linetype = "dashed", size = 0.5) +
   geom_sf(data = water_pt ,color ="Blue") +
   geom_sf(data = step1_2_3_sf ,alpha = 0.05) +
   facet_wrap(.~ date)+
