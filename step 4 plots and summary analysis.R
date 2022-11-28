@@ -156,14 +156,27 @@ summary_audio_ratio_1
 
 
 #### ------------------ PLOTS similar to what I did FOR DANA AND PAPER 10/11/2022-----------------------------#####
+### comments 29/11/2022  make the dots darker and change dates to days####
+
+str(step1_2_3_sf)
+step1_2_3_sf %>%  distinct(DOY)
+
+step1_2_3_sf <- step1_2_3_sf %>% 
+ dplyr::mutate(
+   Day_of_Trial = case_when(
+     DOY == 179 ~ "Day 1",
+     DOY == 180 ~ "Day 2",
+     DOY == 181 ~ "Day 3",
+     DOY == 182 ~ "Day 4",
+     DOY == 183 ~ "Day 5"))
 
 plot1 <- ggplot() +
   geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
   geom_sf(data = VF_paddock, color = "black", fill = NA) +
   geom_sf(data = Chiswick_hard_fence_bound_buff, color = "black", fill = NA,linetype = "dashed", size = 0.5) +
   geom_sf(data = water_pt ,color ="Blue") +
-  geom_sf(data = step1_2_3_sf ,alpha = 0.05) +
-  facet_wrap(.~ date)+
+  geom_sf(data = step1_2_3_sf ,alpha = 0.5) +
+  facet_wrap(.~ Day_of_Trial)+
   theme_bw()+
   theme(legend.position = "none",
         axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())#+
