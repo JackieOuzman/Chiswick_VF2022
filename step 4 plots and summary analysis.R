@@ -175,7 +175,7 @@ plot1 <- ggplot() +
   geom_sf(data = VF_paddock, color = "black", fill = NA) +
   geom_sf(data = Chiswick_hard_fence_bound_buff, color = "black", fill = NA,linetype = "dashed", size = 0.5) +
   geom_sf(data = water_pt ,color ="Blue") +
-  geom_sf(data = step1_2_3_sf ,alpha = 0.5) +
+  geom_sf(data = step1_2_3_sf ,alpha = 0.2) +
   facet_wrap(.~ Day_of_Trial)+
   theme_bw()+
   theme(legend.position = "none",
