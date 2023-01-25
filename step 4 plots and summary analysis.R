@@ -169,20 +169,94 @@ step1_2_3_sf <- step1_2_3_sf %>%
      DOY == 181 ~ "Day 3",
      DOY == 182 ~ "Day 4",
      DOY == 183 ~ "Day 5"))
+install.packages("ggspatial")
+library("ggspatial")
+install.packages("ggsn")
+library("ggsn")
+print(step1_2_3_sf$Day_of_Trial)
+
 
 plot1 <- ggplot() +
   geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
   geom_sf(data = VF_paddock, color = "black", fill = NA) +
-  geom_sf(data = Chiswick_hard_fence_bound_buff, color = "black", fill = NA,linetype = "dashed", size = 0.5) +
-  geom_sf(data = water_pt ,color ="Blue") +
+  geom_sf(data = Chiswick_hard_fence_bound_buff, color = "red", fill = NA,linetype = "dashed", size = 1.2) +
+  geom_sf(data = water_pt ,color ="Blue", size = 3.0) +
   geom_sf(data = step1_2_3_sf ,alpha = 0.2) +
   facet_wrap(.~ Day_of_Trial)+
+  #theme_void()+
   theme_bw()+
+  
+  annotation_scale(pad_x = unit(0.1, "cm"),
+                   pad_y = unit(0.2, "cm"),
+                   width_hint = 0.3,
+                   height = unit(0.09, "cm")) +
+
+ 
+  annotation_north_arrow( pad_x = unit(0.2, "cm"),
+                          pad_y = unit(0.5, "cm"),
+                          height = unit(0.5, "cm"),
+                          width = unit(0.5, "cm"),
+                          which_north = "true",
+                         style = north_arrow_orienteering( text_size = 8))+
   theme(legend.position = "none",
         axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())#+
   # labs(title = "Animal logs in during trial",
   #      subtitle = "log when animals were yarded removed, and clipped to 10 meter buffer")
 plot1
+
+
+
+
+
+plot1a <- ggplot() +
+  geom_sf(data = Chiswick_hard_fence_bound, color = "black", fill = NA) +
+  geom_sf(data = VF_paddock, color = "black", fill = NA) +
+  geom_sf(data = Chiswick_hard_fence_bound_buff, color = "red", fill = NA,linetype = "dashed", size = 1.2) +
+  geom_sf(data = water_pt ,color ="Blue", size = 3.0) +
+  geom_sf(data = step1_2_3_sf ,alpha = 0.2) +
+  #facet_wrap(.~ Day_of_Trial)+
+  facet_grid(.~ Day_of_Trial)+
+  theme_bw()+
+  
+  
+scalebar(step1_2_3_sf, 
+         location="bottomleft" , 
+         dist = 30, #distance to represent with each segment of the scale bar.
+         height =  0.025,
+         st.size = 5,
+         dist_unit = "m",
+         facet.var = c( "Day_of_Trial"), 
+         facet.lev = c(`Day 5`)+
+           transform = FALSE, 
+         model = "WGS84")+
+  
+
+  theme(legend.position = "none",
+        axis.ticks = element_blank(), axis.text.x = element_blank(), axis.text.y = element_blank())#+
+# labs(title = "Animal logs in during trial",
+#      subtitle = "log when animals were yarded removed, and clipped to 10 meter buffer")
+plot1a
+
+
+#mess about trying to get the north arrow to only display on one facet - make graphs first and then apply arrow
+#https://stackoverflow.com/questions/50711547/include-map-scale-and-north-arrow-to-only-one-ggplot-facet
+
+
+northSymbols()
+north2(ggp = plot1a, 
+       scale = 0.05, 
+       x = 0.42, 
+       y = 0.09, 
+       symbol = 12)
+
+
+
+
+
+
+
+
+
 
 
 ggsave(plot1,
