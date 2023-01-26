@@ -387,6 +387,7 @@ Step 1
 - ratio values are taken, I am not sure the best approach
 - ratio 1 = audio_sum/ (pulse_sum+audio_sum )*100
 - ratio 2 = pulse_sum/ (audio_sum )*100
+- ratio_sum_D = ((audio_sum- pulse_sum)/audio_sum)*100)
 
 The above will give us the sum values and associated ratio for each animal on each day.
 
@@ -411,12 +412,14 @@ summary_audio_ratio <- step1_2_3_sf %>%
   dplyr::summarise(audio_sum = sum(Audio_values, na.rm = TRUE),
             pulse_sum = sum(Shock_values, na.rm = TRUE),
             ratio_sum1 = audio_sum/ (pulse_sum+audio_sum )*100,
-            ratio_sum2 = pulse_sum/ (audio_sum )*100)
+            ratio_sum2 = pulse_sum/ (audio_sum )*100,
+            ratio_sum_D = ((audio_sum- pulse_sum)/audio_sum)*100)
   
 
 
 summary_audio_ratio$ratio_sum1 [is.nan(summary_audio_ratio$ratio_sum1 )]<-NA
 summary_audio_ratio$ratio_sum2 [is.nan(summary_audio_ratio$ratio_sum2 )]<-NA
+summary_audio_ratio$ratio_sum_D [is.nan(summary_audio_ratio$ratio_sum_D )]<-NA
 
 names(summary_audio_ratio)
 
@@ -439,12 +442,16 @@ summary_audio_ratio_all <- summary_audio_ratio %>%
             
             ratio_1_mean = mean(ratio_sum1, na.rm= TRUE),
             ratio_2_mean = mean(ratio_sum2, na.rm= TRUE),
+            ratio_D_mean = mean(ratio_sum_D, na.rm= TRUE),
             
             std_dev_Av_Ratio_1 = sd(ratio_sum1, na.rm = TRUE),
             SE_Av_std_dev_Av_Ratio_1 = std_dev_Av_Ratio_1 / sqrt(n()),
             
             std_dev_Av_Ratio_2 = sd(ratio_sum2, na.rm = TRUE),
-            SE_Av_std_dev_Av_Ratio_2 = std_dev_Av_Ratio_2 / sqrt(n())
+            SE_Av_std_dev_Av_Ratio_2 = std_dev_Av_Ratio_2 / sqrt(n()),
+            
+            std_dev_Av_Ratio_D = sd(ratio_sum_D, na.rm = TRUE),
+            SE_Av_std_dev_Av_Ratio_D = std_dev_Av_Ratio_D / sqrt(n())
             
             )
  
@@ -459,10 +466,13 @@ summary_audio_ratio_all <- summary_audio_ratio_all %>%dplyr::select(
                 SE_Av_Pulse,  
                 ratio_1_mean  ,
                 ratio_2_mean , 
+                ratio_D_mean,
                 std_dev_Av_Ratio_1  ,    
                 SE_Av_std_dev_Av_Ratio_1 , 
                 std_dev_Av_Ratio_2,
-                SE_Av_std_dev_Av_Ratio_2)
+                SE_Av_std_dev_Av_Ratio_2,
+                std_dev_Av_Ratio_D,
+                SE_Av_std_dev_Av_Ratio_D)
 
  
 
@@ -524,7 +534,7 @@ summary_audio_ratio_all_long %>%
 
 
 summary_audio_ratio_all_long_v2 <- summary_audio_ratio_all %>% 
-  pivot_longer(cols=c('audio_av':"SE_Av_std_dev_Av_Ratio_2"),
+  pivot_longer(cols=c('audio_av':"SE_Av_std_dev_Av_Ratio_D"),
                names_to='cue',
                values_to='value')
 
@@ -550,12 +560,16 @@ summary_audio_ratio_per_animal <- summary_audio_ratio %>%
                    
                    ratio_1_mean = mean(ratio_sum1, na.rm= TRUE),
                    ratio_2_mean = mean(ratio_sum2, na.rm= TRUE),
+                   ratio_D_mean = mean(ratio_sum_D, na.rm= TRUE),
                    
                    std_dev_Av_Ratio_1 = sd(ratio_sum1, na.rm = TRUE),
                    SE_Av_std_dev_Av_Ratio_1 = std_dev_Av_Ratio_1 / sqrt(n()),
                    
                    std_dev_Av_Ratio_2 = sd(ratio_sum2, na.rm = TRUE),
-                   SE_Av_std_dev_Av_Ratio_2 = std_dev_Av_Ratio_2 / sqrt(n())
+                   SE_Av_std_dev_Av_Ratio_2 = std_dev_Av_Ratio_2 / sqrt(n()),
+                   
+                   std_dev_Av_Ratio_D = sd(ratio_sum_D, na.rm = TRUE),
+                   SE_Av_std_dev_Av_Ratio_D = std_dev_Av_Ratio_D / sqrt(n())
                    
   )
 summary_audio_ratio_per_animal
